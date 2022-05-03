@@ -9,6 +9,7 @@
 
 import tkinter
 import os                         # directory paths
+import register_db                # database functions
 from PIL import Image, ImageTk    # pip install Pillow / background images
 from tkinter import font          # that would be for fonts
 from tkinter import ttk           # combo box
@@ -205,12 +206,14 @@ class Register:
                                         'Name Of Best Friend',
                                         'Life, The Universe, Everything' )
         style = ttk.Style()
+        self.root.option_add('*TCombobox*Listbox.font', self.title_font)
         style.configure( 'TCombobox',
                          fieldbackground = 'PaleTurquoise3',
                          selectbackground = 'PaleTurquoise3',
                          selectforeground = 'blue',
                          background = 'PaleTurquoise3',
                          foreground = 'blue' )
+        #self.root.option_add('*TCombobox*Listbox.font', self.title_font)
         
         self.lbl_answer = tkinter.Label( self.frm_register,
                                          font = self.lbl_font,
@@ -302,6 +305,17 @@ class Register:
                                          #text = 'Register Now',
                                          command = self.login_now_callback )
         self.btn_login.place( x = 168, y = 560 )
+        
+    def clear_fields( self ):
+        self.var_fname.set( '' )
+        self.var_lname.set( '' )
+        self.var_contact.set( '' )
+        self.var_email.set( '' )
+        self.var_security.set( '' )
+        self.var_answer.set( '' )
+        self.var_password.set( '' )
+        self.var_confirm.set( '' )
+        self.ent_fname.focus()
                                          
         
         
@@ -310,17 +324,49 @@ class Register:
             messagebox.showerror( 'Error',
                                   'All Fields Are Required',
                                   parent = self.root )
-
-        #print( 'Register Button Clicked' )
-        print( self.var_fname.get())
-        print( self.var_lname.get())
-        print( self.var_contact.get())
-        print( self.var_email.get())
-        print( self.var_security.get())
-        print( self.var_answer.get())
-        print( self.var_password.get())
-        print( self.var_confirm.get())
-        
+            
+        elif self.var_password.get() != self.var_confirm.get():
+            messagebox.showerror( 'Error',
+                                  'Password & Confirm Mismatch!',
+                                  parent = self.root )
+        else:
+            #print( 'Register Button Clicked' )
+            reg_info = [( self.var_fname.get(),
+                          self.var_lname.get(),
+                          self.var_contact.get(),
+                          self.var_email.get(),
+                          self.var_security.get(),
+                          self.var_answer.get(),
+                          self.var_password.get())]
+            
+            print( reg_info )
+            print( 'Email Information -> ', self.var_email.get())
+            query_result = register_db.check_email( self.var_email.get())
+            if query_result != None:
+                messagebox.showerror( 'Error',
+                                      'Email Exists!, Try Another Email',
+                                       parent = self.root )
+                #print( 'Found email in reg_info' )
+            else:
+                print( 'All Is Good, OK' )
+                result_id = register_db.insert_registration( reg_info )
+                if result_id >= 1:
+                    messagebox.showinfo( 'Success',
+                                         'Registration Successfull',
+                                          parent = self.root )
+                    self.clear_fields()
+                else:
+                    print( 'Line 350 register_db_insert function FAILED!!!', result_id )
+                         
+#             print( self.var_fname.get())
+#             print( self.var_lname.get())
+#             print( self.var_contact.get())
+#             print( self.var_email.get())
+#             print( self.var_security.get())
+#             print( self.var_answer.get())
+#             print( self.var_password.get())
+#             print( self.var_confirm.get())
+            
     def login_now_callback( self ):
         messagebox.showinfo( 'Information',
                              'You have successfully pressed the Login Button!',
